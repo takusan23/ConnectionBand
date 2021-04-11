@@ -48,15 +48,26 @@ class MainActivity : AppCompatActivity() {
     /** 接続しているバンドをTextViewに入れる */
     private fun setBandToTextView() {
         getEarfcn { cellInfo ->
-            if (cellInfo is CellInfoLte) {
-                // 4G / LTE
-                val band = getBand(cellInfo.cellIdentity.earfcn)
-                viewBinding.activityMainTextView.text = "接続中バンド：${band}"
-            } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                // 5G NR
-                if (cellInfo.cellIdentity is CellIdentityNr) {
-                    val band = getNRBand((cellInfo.cellIdentity as CellIdentityNr).nrarfcn)
-                    viewBinding.activityMainTextView.text = "接続中バンド：n${band}"
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                when (cellInfo) {
+                    is CellInfoLte -> {
+                        // 4G / LTE
+                        val band = getBand(cellInfo.cellIdentity.earfcn)
+                        viewBinding.activityMainTextView.text = "接続中バンド：${band}"
+                    }
+                    is CellInfoNr -> {
+                        // 5G NR
+                        val band = getNRBand((cellInfo.cellIdentity as CellIdentityNr).nrarfcn)
+                        viewBinding.activityMainTextView.text = "接続中バンド：n${band}"
+                    }
+                }
+            } else {
+                when (cellInfo) {
+                    is CellInfoLte -> {
+                        // 4G / LTE
+                        val band = getBand(cellInfo.cellIdentity.earfcn)
+                        viewBinding.activityMainTextView.text = "接続中バンド：${band}"
+                    }
                 }
             }
         }
@@ -82,6 +93,7 @@ class MainActivity : AppCompatActivity() {
 
     /** EARFCNからバンドを割り出す */
     private fun getBand(earfcn: Int): Int {
+        println(earfcn)
         /**
          * https://www.arib.or.jp/english/html/overview/doc/STD-T104v2_10/5_Appendix/Rel11/36/36101-b50.pdf
          *
@@ -101,24 +113,30 @@ class MainActivity : AppCompatActivity() {
                 BandData(11, 4750, 4949),
                 BandData(12, 5010, 5179),
                 BandData(13, 5180, 5279),
-                BandData(14, 5280, 5379),
+                BandData(14, 5280, 5279),
                 BandData(17, 5730, 5849),
                 BandData(18, 5850, 5999),
                 BandData(19, 6000, 6149),
                 BandData(20, 6150, 6449),
                 BandData(21, 6450, 6599),
+                BandData(22, 6600, 7399),
+                BandData(23, 7500, 7699),
                 BandData(24, 7700, 8039),
-                BandData(33, 36000, 36199),
-                BandData(34, 36200, 36349),
-                BandData(35, 36350, 36949),
-                BandData(36, 36950, 37549),
-                BandData(37, 37550, 37749),
-                BandData(38, 37750, 38249),
-                BandData(39, 38250, 38649),
-                BandData(40, 38650, 39649),
-                BandData(41, 39650, 41589),
-                BandData(42, 41590, 43589),
-                BandData(43, 43590, 45589),
+                BandData(25, 8040, 8689),
+                BandData(26, 8690, 9039),
+                BandData(27, 9040, 9209),
+                BandData(28, 9210, 9659),
+                BandData(29, 9660, 9769),
+                BandData(30, 9770, 9869),
+                BandData(31, 9870, 9919),
+                BandData(32, 9920, 10359),
+                BandData(65, 65536, 66435),
+                BandData(66, 66436, 67335),
+                BandData(67, 67336, 67535),
+                BandData(68, 67536, 67835),
+                BandData(69, 67836, 68335),
+                BandData(70, 68336, 68585),
+                BandData(71, 68586, 68935),
         )
         // 探す
         return bandList.find { bandData -> earfcn in bandData.nDlMin..bandData.nDlMax }?.bandNumber ?: 0
